@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Оформление заказа - GameShop{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Оформление заказа</h1>
+
+{% if cart.games.all %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Ваш заказ</h5>
+            </div>
+            <div class="card-body">
+                {% for game in cart.games.all %}
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                    <div>
+                        <h6 class="mb-0">{{ game.title }}</h6>
+                        <small class="text-muted">{{ game.developer }}</small>
+                    </div>
+                    <span class="h6 mb-0">{{ game.price }} руб.</span>
+                </div>
+                {% endfor %}
+                
+                <div class="d-flex justify-content-between align-items-center pt-3">
+                    <h4 class="mb-0">Итого:</h4>
+                    <h4 class="mb-0 text-primary">{{ cart.count_price }} руб.</h4>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Подтверждение заказа</h5>
+            </div>
+            <div class="card-body">
+                <p>После подтверждения заказа игры будут добавлены в вашу библиотеку, а на вашу почту будет отправлено подтверждение.</p>
+                
+                <form action="{% url 'games:make_order' %}"method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-lg w-100">
+                        <i class="fas fa-check me-1"></i>Подтвердить заказ
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Информация о покупке</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Покупатель:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Количество игр:</strong> {{ cart.games.count }}</p>
+                <div class="alert alert-info mt-3">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        Это демонстрационная покупка. Реальная оплата не производится.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+    <h3>Ваша корзина пуста</h3>
+    <p class="text-muted">Добавьте игры, чтобы продолжить покупки</p>
+    <a href="{% url 'games:index' %}" class="btn btn-primary">Перейти к покупкам</a>
+</div>
+{% endif %}
+{% endblock %}

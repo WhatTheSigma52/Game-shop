@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль - GameShop{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" alt="Аватар" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                        <i class="fas fa-user text-light" style="font-size: 70px;"></i>
+                    </div>
+                {% endif %}
+                <h3>{{ user.username }}</h3>
+                <p class="text-muted">На сайте с: {{ user.date_joined|date:"d.m.Y" }}</p>
+                
+                {% if profile.about %}
+                    <div class="mt-3">
+                        <h6>О себе:</h6>
+                        <p class="text-muted">{{ profile.about }}</p>
+                    </div>
+                {% endif %}
+                
+                {% if profile.birth_date %}
+                    <div class="mt-2">
+                        <h6>Дата рождения:</h6>
+                        <p class="text-muted">{{ profile.birth_date|date:"d.m.Y" }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>Редактирование профиля
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.about.id_for_label }}" class="form-label">
+                            <i class="fas fa-user-edit me-1"></i>О себе
+                        </label>
+                        {{ form.about }}
+                        {% if form.bio.help_text %}
+                            <div class="form-text">{{ form.about.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.birth_date.id_for_label }}" class="form-label">
+                            <i class="fas fa-birthday-cake me-1"></i>Дата рождения
+                        </label>
+                        {{ form.birth_date }}
+                        {% if form.birth_date.help_text %}
+                            <div class="form-text">{{ form.birth_date.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.avatar.id_for_label }}" class="form-label">
+                            <i class="fas fa-camera me-1"></i>Аватар
+                        </label>
+                        {{ form.avatar }}
+                        {% if form.avatar.help_text %}
+                            <div class="form-text">{{ form.avatar.help_text }}</div>
+                        {% endif %}
+                        {% if profile.avatar %}
+                            <div class="mt-2">
+                                <small class="text-muted">Текущий аватар: {{ profile.avatar.name }}</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Сохранить изменения
+                        </button>
+                        <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-gamepad me-2"></i>Моя библиотека игр
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if library_games %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Игра</th>
+                                    <th>Дата покупки</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in library_games %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.game.title }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ item.game.developer }}</small>
+                                    </td>
+                                    <td>
+                                        <small>{{ item.purchase_date|date:"d.m.Y H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'games:game_detail' item.game.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i>Перейти к игре
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <h6>
+                            <i class="fas fa-info-circle me-1"></i>Статистика:
+                        </h6>
+                        <p class="mb-0">Всего игр в библиотеке: <strong>{{ library_games|length }}</strong></p>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-gamepad fa-3x text-muted mb-3"></i>
+                        <h5>Ваша библиотека пуста</h5>
+                        <p class="text-muted">У вас пока нет купленных игр.</p>
+                        <a href="{% url 'games:index' %}" class="btn btn-primary">
+                            <i class="fas fa-shopping-cart me-1"></i>Перейти к покупкам
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+</style>
+{% endblock %}

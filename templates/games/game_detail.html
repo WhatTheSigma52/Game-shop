@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ game.title }} - GameShop{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h1 class="card-title">{{ game.title }}</h1>
+                
+                <div class="d-flex flex-wrap gap-3 mb-3">
+                    <span class="badge bg-secondary">{{ game.developer }}</span>
+                    <span class="badge bg-info text-dark">{{ game.release_year }}</span>
+                </div>
+                
+                <div class="d-flex gap-3 mb-3">
+                    {% for os in game.supported_os.all %}
+                    <span class="os-icon" title="{{ os.name }}">
+                        <i class="{{ os.icon_class }}"></i>
+                    </span>
+                    {% endfor %}
+                </div>
+                
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-2">
+                        {% with full_stars=game.rating|floatformat:0 %}
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= full_stars %}
+                            <span class="star full" style="font-size: 1.5rem;">★</span>
+                            {% else %}
+                            <span class="star" style="font-size: 1.5rem;">★</span>
+                            {% endif %}
+                        {% endfor %}
+                        {% endwith %}
+                    </div>
+                    <span class="h5 mb-0 text-muted">{{ game.rating }}/5.0 ({{ game.reviews.count }} отзывов)</span>
+                </div>
+                
+                <p class="card-text">{{ game.description }}</p>
+            </div>
+        </div>
+        
+        {% if game.system_req %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Системные требования</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Архитектура:</strong> {{ game.system_req.architecture }}</p>
+                        <p><strong>ОС:</strong> {{ game.system_req.os }}</p>
+                        <p><strong>Процессор:</strong> {{ game.system_req.processor }}</p>
+                        <p><strong>Память:</strong> {{ game.system_req.memory }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Видеокарта:</strong> {{ game.system_req.graphics }}</p>
+                        <p><strong>Место на диске:</strong> {{ game.system_req.storage }}</p>
+                        {% if game.system_req.additional %}
+                        <p><strong>Дополнительно:</strong> {{ game.system_req.additional }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Отзывы покупателей</h5>
+            </div>
+            <div class="card-body">
+                {% for review in reviews %}
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>{{ review.user.username }}</strong>
+                        <div>
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= review.rating %}
+                                <span class="star full">★</span>
+                                {% else %}
+                                <span class="star">★</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <p class="mb-1">{{ review.text }}</p>
+                    <small class="text-muted">{{ review.created_at|date:"d.m.Y H:i" }}</small>
+                </div>
+                {% empty %}
+                <p class="text-muted">Пока нет отзывов на эту игру.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <h3 class="text-white mb-3">{{ game.price }} руб.</h3>
+                
+                {% if user.is_authenticated %}
+                    {% if in_library %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-1"></i>Игра уже в вашей библиотеке
+                        </div>
+                        <a href="{% url 'users:profile' %}" class="btn btn-outline-primary w-100">Перейти в библиотеку</a>
+                    {% else %}
+                        {% if in_cart %}
+                            <button class="btn btn-secondary w-100 mb-2" disabled>
+                                <i class="fas fa-shopping-cart me-1"></i>В корзине
+                            </button>
+                        {% else %}
+                            <form action="{% url 'games:add_to_cart' game.id %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary w-100 mb-2">
+                                    <i class="fas fa-cart-plus me-1"></i>Добавить в корзину
+                                </button>
+                            </form>
+                        {% endif %}
+                        <a href="{% url 'games:cart' %}" class="btn btn-outline-primary w-100">Перейти в корзину</a>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted mb-3">Войдите, чтобы добавить игру в корзину</p>
+                    <a href="{% url 'users:login' %}" class="btn btn-primary w-100">Войти</a>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if in_library %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Ваш отзыв</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Оценка</label>
+                        {{ form.rating }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Текст отзыва</label>
+                        {{ form.text }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Оставить отзыв</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

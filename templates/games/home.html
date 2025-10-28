@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}GameShop - Главная{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-body">
+        <form class="d-flex mb-3" method="GET" action="{% url 'games:index' %}">
+            <input class="form-control me-2" type="search" name="q" placeholder="Поиск игр..." value="{{ request.GET.q }}">
+            <button class="btn btn-outline-primary" type="submit"><i class="fas fa-search"></i></button>
+        </form>
+        
+        <div class="d-flex flex-wrap gap-2 mb-2">
+            <strong>Сортировка:</strong>
+            <a href="?filter=price_asc{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" 
+               class="btn btn-sm {% if request.GET.filter == 'price_asc' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Сначала дешевые
+            </a>
+            <a href="?filter=price_desc{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" 
+               class="btn btn-sm {% if request.GET.filter == 'price_desc' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Сначала дорогие
+            </a>
+            <a href="?filter=popular{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" 
+               class="btn btn-sm {% if request.GET.filter == 'popular' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                По популярности
+            </a>
+        </div>
+        
+        <div class="d-flex flex-wrap gap-2">
+            <strong>Жанры:</strong>
+            {% for genre in genres %}
+                <a href="?genre={{ genre.name }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" 
+                   class="btn btn-sm {% if request.GET.genre == genre.name %}btn-success{% else %}btn-outline-success{% endif %}">
+                    {{ genre.name }}
+                </a>
+            {% endfor %}
+            <a href="{% url 'games:index' %}" class="btn btn-sm btn-outline-secondary">Сбросить фильтры</a>
+        </div>
+    </div>
+</div>
+
+<h1 class="mb-4">Каталог игр</h1>
+
+{% if games %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for game in games %}
+    <div class="col">
+        <div class="card h-100 game-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="{% url 'games:game_detail' game.id %}" class="text-decoration-none">{{ game.title }}</a>
+                </h5>
+                <p class="card-text mb-1"><small class="text-muted">Разработчик: {{ game.developer }}</small></p>
+                <p class="card-text mb-1"><small class="text-muted">Год выпуска: {{ game.release_year }}</small></p>
+                
+                <div class="d-flex justify-content-between align-items-center my-2">
+                    <span class="h5 mb-0">{{ game.price }} руб.</span>
+                    
+                    <div class="d-flex gap-2">
+                        {% for os in game.supported_os.all %}
+                        <span class="os-icon" title="{{ os.name }}">
+                            <i class="{{ os.icon_class }}"></i>
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-2">
+                        {% with full_stars=game.rating|floatformat:0 %}
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= full_stars %}
+                            <span class="star full">★</span>
+                            {% else %}
+                            <span class="star">★</span>
+                            {% endif %}
+                        {% endfor %}
+                        {% endwith %}
+                    </div>
+                    <small class="text-muted">{{ game.rating }}/5.0</small>
+                </div>
+                
+                {% if user.is_authenticated %}
+                <form action="{% url 'games:add_to_cart' game.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-cart-plus me-1"></i>В корзину
+                    </button>
+                </form>
+                {% else %}
+                <a href="{% url 'users:login' %}" class="btn btn-outline-primary w-100">Войдите, чтобы купить</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info text-center">
+    <h4>Игры не найдены</h4>
+    <p>Попробуйте изменить параметры поиска или фильтрации</p>
+</div>
+{% endif %}
+{% endblock %}

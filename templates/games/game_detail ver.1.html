@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ game.title }} - GameShop{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h1 class="card-title">{{ game.title }}</h1>
+                
+                <div class="d-flex flex-wrap gap-3 mb-3">
+                    <span class="badge bg-secondary">{{ game.developer }}</span>
+                    <span class="badge bg-info text-dark">{{ game.release_year }}</span>
+                </div>
+                
+                <div class="d-flex gap-3 mb-3">
+                    {% for os in game.supported_os.all %}
+                    <span class="os-icon" title="{{ os.name }}">
+                        <i class="{{ os.icon_class }}"></i>
+                    </span>
+                    {% endfor %}
+                </div>
+                
+                <p class="card-text">{{ game.description }}</p>
+            </div>
+        </div>
+        
+        {% if game.system_requirements %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Системные требования</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>ОС:</strong> {{ game.system_requirements.os }}</p>
+                        <p><strong>Процессор:</strong> {{ game.system_requirements.cpu }}</p>
+                        <p><strong>Память:</strong> {{ game.system_requirements.ram }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Видеокарта:</strong> {{ game.system_requirements.gpu }}</p>
+                        {% if game.system_requirements.additional %}
+                        <p><strong>Дополнительно:</strong> {{ game.system_requirements.additional }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

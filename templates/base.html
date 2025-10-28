@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GameShop{% endblock %}</title>
+    <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}">
+    <style>
+        .os-icon {
+            font-size: 1.8em;
+            transition: transform 0.2s;
+        }
+        .os-icon:hover {
+            transform: scale(1.2);
+        }
+        .fa-windows {
+            color: #0078D7;
+        }
+        .fa-linux {
+            color: #000000;
+        }
+        .fa-apple {
+            color: #A2AAAD;
+        }
+        .star {
+            color: #ccc;
+        }
+        .star.full {
+            color: #f8d64e;
+        }
+        .game-card {
+            transition: transform 0.2s;
+            height: 100%;
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    {% include "includes/header.html" %}
+
+    <main class="container my-4">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {% include "includes/footer.html" %}
+
+</body>
+</html>
