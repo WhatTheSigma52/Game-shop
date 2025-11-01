@@ -91,6 +91,8 @@ class SystemRequirements(models.Model):
                           choices=OS_CHOICES,
                           default='Windows 10',
                           verbose_name='Операционная система')
+    storage = models.CharField(max_length=16,
+                               verbose_name='Место на диске')
 
     def __str__(self):
         return 'Системные требования'
@@ -104,18 +106,18 @@ class Review(models.Model):
                              on_delete=models.CASCADE,
                              related_name='reviews')
     text = models.CharField(max_length=512,
-                            blank=False,
-                            null=False,
                             verbose_name='Комментарий')
     pub_date = models.DateTimeField(auto_now_add=True,
                                     verbose_name='Время и дата')
-    rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)],
-                                              verbose_name='Рейтинг')
-    
+    rating = models.DecimalField(max_digits=3,
+                                 decimal_places=1,
+                                 validators=[MinValueValidator(1), MaxValueValidator(5)],
+                                 verbose_name='Рейтинг')
+
     class Meta:
         ordering = ('-pub_date',)
         unique_together = ('user', 'game')
-    
+
     def __str__(self):
         return f'Отзыв: {self.user} на игру: {self.game}'
 

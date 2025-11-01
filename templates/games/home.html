@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}GameShop - Главная{% endblock %}
-
+{% load user_filters %}  
 {% block content %}
 <div class="card mb-4">
     <div class="card-body">
@@ -67,26 +67,30 @@
                 
                 <div class="d-flex align-items-center mb-3">
                     <div class="me-2">
-                        {% with full_stars=game.rating|floatformat:0 %}
-                        {% for i in "12345"|make_list %}
-                            {% if forloop.counter <= full_stars %}
+                        {% with stars=game.rating|stars_display %}
+                        {% for star_type in stars %}
+                            {% if star_type == 'full' %}
                             <span class="star full">★</span>
+                            {% elif star_type == 'half' %}
+                            <span class="star half">★</span>
                             {% else %}
                             <span class="star">★</span>
                             {% endif %}
                         {% endfor %}
                         {% endwith %}
                     </div>
-                    <small class="text-muted">{{ game.rating }}/5.0</small>
+                    <small class="text-muted">{{ game.rating|format_rating }}/5.0</small>
                 </div>
                 
                 {% if user.is_authenticated %}
-                <form action="{% url 'games:add_to_cart' game.id %}" method="POST">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-cart-plus me-1"></i>В корзину
-                    </button>
-                </form>
+                    {% if game not in user.library %}
+                        <form action="{% url 'games:add_to_cart' game.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-cart-plus me-1"></i>В корзину
+                            </button>
+                        </form>
+                    {% endif %}
                 {% else %}
                 <a href="{% url 'users:login' %}" class="btn btn-outline-primary w-100">Войдите, чтобы купить</a>
                 {% endif %}

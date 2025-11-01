@@ -9,8 +9,6 @@ class ReviewForm(forms.ModelForm):
         fields = ('text', 'rating')
         labels = {'text': 'Текст комментария',
                   'rating': 'Рейтинг игры'}
-        help_texts = {'text': 'Введите текст',
-                      'rating': 'Поставьте оценку игре'}
         widgets = {'rating': forms.NumberInput(attrs={'class': 'form-control',
                                                       'min' : 1,
                                                       'max': 5,

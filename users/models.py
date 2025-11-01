@@ -4,10 +4,17 @@ from games.models import Order, Game
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    about = models.TextField(max_length=500, blank=True, verbose_name='О себе')
-    birth_date = models.DateField(null=True, blank=True, verbose_name='Дата рождения')
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, verbose_name='Аватар')
+    user = models.OneToOneField(User,
+                                on_delete=models.CASCADE,
+                                default='random_user')
+    about = models.TextField(max_length=500,
+                             default='Ничего',
+                             verbose_name='О себе')
+    birth_date = models.DateField(default='2000-01-01',
+                                  verbose_name='Дата рождения')
+    avatar = models.ImageField(upload_to='avatars/',
+                               default='default/default.jpg',
+                               verbose_name='Аватар')
 
     def __str__(self):
         return self.user.username

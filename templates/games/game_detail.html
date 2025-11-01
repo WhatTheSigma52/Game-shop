@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}{{ game.title }} - GameShop{% endblock %}
-
+{% load user_filters %}  
 {% block content %}
 <div class="row">
     <div class="col-md-8">
@@ -24,24 +24,24 @@
                 
                 <div class="d-flex align-items-center mb-3">
                     <div class="me-2">
-                        {% with full_stars=game.rating|floatformat:0 %}
-                        {% for i in "12345"|make_list %}
-                            {% if forloop.counter <= full_stars %}
+                        {% with stars=game.rating|stars_display %}
+                        {% for star_type in stars %}
+                            {% if star_type == 'full' %}
                             <span class="star full" style="font-size: 1.5rem;">★</span>
+                            {% elif star_type == 'half' %}
+                            <span class="star half" style="font-size: 1.5rem;">★</span>
                             {% else %}
                             <span class="star" style="font-size: 1.5rem;">★</span>
                             {% endif %}
                         {% endfor %}
                         {% endwith %}
                     </div>
-                    <span class="h5 mb-0 text-muted">{{ game.rating }}/5.0 ({{ game.reviews.count }} отзывов)</span>
+                    <span class="h5 mb-0 text-muted">{{ game.rating|format_rating }}/5.0 ({{ game.reviews.count }} отзывов)</span>
                 </div>
-                
-                <p class="card-text">{{ game.description }}</p>
             </div>
         </div>
         
-        {% if game.system_req %}
+        {% if game.system_requirements %}
         <div class="card mb-4">
             <div class="card-header">
                 <h5 class="mb-0">Системные требования</h5>
@@ -49,17 +49,13 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Архитектура:</strong> {{ game.system_req.architecture }}</p>
-                        <p><strong>ОС:</strong> {{ game.system_req.os }}</p>
-                        <p><strong>Процессор:</strong> {{ game.system_req.processor }}</p>
-                        <p><strong>Память:</strong> {{ game.system_req.memory }}</p>
+                        <p><strong>ОС:</strong> {{ game.system_requirements.get_os_display }}</p>
+                        <p><strong>Процессор:</strong> {{ game.system_requirements.get_cpu_display }}</p>
+                        <p><strong>Память:</strong> {{ game.system_requirements.get_ram_display }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Видеокарта:</strong> {{ game.system_req.graphics }}</p>
-                        <p><strong>Место на диске:</strong> {{ game.system_req.storage }}</p>
-                        {% if game.system_req.additional %}
-                        <p><strong>Дополнительно:</strong> {{ game.system_req.additional }}</p>
-                        {% endif %}
+                        <p><strong>Видеокарта:</strong> {{ game.system_requirements.get_gpu_display }}</p>
+                        <p><strong>Место на диске:</strong> {{ game.system_requirements.storage }}</p>
                     </div>
                 </div>
             </div>
@@ -74,15 +70,28 @@
                 {% for review in reviews %}
                 <div class="border-bottom pb-3 mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <strong>{{ review.user.username }}</strong>
+                        <strong>
+                            <a href="{% url 'games:public_profile' review.user.username %}" class="text-decoration-none">
+                                {{ review.user.username }}
+                            </a>
+                        </strong>
                         <div>
-                            {% for i in "12345"|make_list %}
-                                {% if forloop.counter <= review.rating %}
-                                <span class="star full">★</span>
-                                {% else %}
-                                <span class="star">★</span>
-                                {% endif %}
-                            {% endfor %}
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-2">
+                                    {% with stars=game.rating|stars_display %}
+                                    {% for star_type in stars %}
+                                        {% if star_type == 'full' %}
+                                        <span class="star full" style="font-size: 1.5rem;">★</span>
+                                        {% elif star_type == 'half' %}
+                                        <span class="star half" style="font-size: 1.5rem;">★</span>
+                                        {% else %}
+                                        <span class="star" style="font-size: 1.5rem;">★</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endwith %}
+                                </div>
+                                <span class="h5 mb-0 text-muted">{{ game.rating|format_rating }}/5.0 (Отзывов: {{ game.reviews.count }})</span>
+                            </div>
                         </div>
                     </div>
                     <p class="mb-1">{{ review.text }}</p>

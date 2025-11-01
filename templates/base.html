@@ -23,12 +23,6 @@
         .fa-apple {
             color: #A2AAAD;
         }
-        .star {
-            color: #ccc;
-        }
-        .star.full {
-            color: #f8d64e;
-        }
         .game-card {
             transition: transform 0.2s;
             height: 100%;
@@ -40,6 +34,28 @@
         .navbar-brand {
             font-weight: bold;
         }
+        .star {
+            color: #ddd;
+            font-size: 1.2em;
+            position: relative;
+            display: inline-block;
+        }
+        .star.full {
+            color: #f8d64e;
+        }
+        .star.half {
+            color: #ddd;
+        }
+        .star.half::before {
+            content: "★";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50%;
+            overflow: hidden;
+            color: #f8d64e;
+        }
+
     </style>
 </head>
 <body>

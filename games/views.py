@@ -4,11 +4,15 @@ from django.db.models import Q, Count
 from django.core.mail import send_mail
 from django.conf import settings
 from games.models import Game, Cart, Order, Review, Genre
+from users.models import Profile
 from games.forms import ReviewForm
+from django.contrib.auth import get_user_model
+from games.models import Order
 import logging
 
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 
 def index(request):
@@ -34,33 +38,44 @@ def index(request):
         games = games.filter(genres__name=genre)
 
     context = {'games': games, 'genres': genres}
-    return render(request, 'games/home ver.1.html', context)
+    return render(request, 'games/home.html', context)
 
 
 def game_detail(request, game_id):
     game = get_object_or_404(Game, pk=game_id)
+    print(f'Страница игры {game.title} загружена')
     in_cart = False
     in_library = False
     user_review = None
 
     if request.user.is_authenticated:
+        print(f'Нашел пользователя {request.user.username}')
+        try:
+            cart = Cart.objects.get(user=request.user)
+            in_cart = cart.games.filter(pk=game_id).exists()
+            print(f'Игра в корзине {in_cart}')
+        except Cart.DoesNotExist:
+            cart = Cart.objects.create(user=request.user)
+            in_cart = False
         in_library = Order.objects.filter(user=request.user,
-                                          status='Completed',
-                                          games=game).exists()
-        in_cart = request.user.cart.games.filter(pk=game_id).exists()
+                                        status='Completed',
+                                        games=game).exists()
+        print(f'Игра в библиотеке {in_library}')
         if in_library:
             try:
                 user_review = Review.objects.filter(user=request.user,
-                                                    game=game)
+                                                    game=game).first()
+                print(f'Отзыв пользователя {user_review} найден')
             except Review.DoesNotExist:
                 user_review = None
+                print(f'У пользователя нет отзыва')
 
     if request.method == 'POST' and in_library:
         if user_review:
-            form = ReviewForm(request.POST or None,
-                            instance=user_review)
+            form = ReviewForm(request.POST,
+                              instance=user_review)
         else:
-            form = ReviewForm(request.POST or None)
+            form = ReviewForm(request.POST)
 
         if form.is_valid():
             review = form.save(commit=False)
@@ -149,3 +164,25 @@ def order_success(request, order_id):
     order.save()
     context = {'order': order}
     return render(request, 'cart/order_success.html', context)
+
+
+def public_profile(request, username):
+    user = get_object_or_404(User, username=username)
+    profile = get_object_or_404(Profile, user=user)
+
+    library_games = []
+    completed_orders = Order.objects.filter(user=request.user, status='Completed')
+
+    for order in completed_orders:
+        for game in order.games.all():
+            library_games.append({
+                'game': game,
+                'purchase_date': order.date})
+
+    is_own_profile = request.user == user
+
+    context = {'user': user,
+               'profile': profile,
+               'library_games': library_games,
+               'is_own_profile': is_own_profile}
+    return render('games/public_profile.html', context)
